@@ -1,10 +1,7 @@
-# LIBERO is cloned and put on the path without its pinned deps:
-#   git clone https://github.com/Lifelong-Robot-Learning/LIBERO
-#   echo $PWD/LIBERO > .venv/lib/python3.11/site-packages/libero.pth
+# Simulation extras: robosuite on MuJoCo powers src.sim and scripts 05 and 09. Pins are those of the environment the experiments ran in.
 # macOS only: mujoco 2.3.7 loads OpenGL from a path that no longer exists. In
 # mujoco/cgl/cgl.py replace /System/Library/OpenGL.framework with
 # /System/Library/Frameworks/OpenGL.framework
-# Set LIBERO_CONFIG_PATH to a writable folder; the first import creates config.yaml there.
 mujoco==2.3.7
 robosuite==1.4.0
 bddl==1.0.1

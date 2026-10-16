@@ -195,6 +195,19 @@ Apart from the bottleneck, these choices were not ablated.
   but closed-loop reaching with the Robotiq gripper drifted away from the goal. Left as future work.
 - **Decoding actions straight from z.** A latent-to-action decoder gave negative position R^2 on held-out demos, which is why an IDM on features is used.
 
+## Third-Party Code, Models And Licences
+
+| Component | Used for | Licence and access |
+|---|---|---|
+| [DINOv3 ViT-S/16](https://huggingface.co/facebook/dinov3-vits16-pretrain-lvd1689m) (`facebook/dinov3-vits16-pretrain-lvd1689m`, Meta) | The frozen feature extractor ($F_t$), loaded through `transformers.AutoModel` | Meta's [DINOv3 License](https://ai.meta.com/resources/models-and-libraries/dinov3-license), not an open-source licence. The weights are gated: request access on the model page, then `hf auth login` |
+| [robosuite](https://github.com/ARISE-Initiative/robosuite) 1.4.0 | Simulation: scenes, Panda and Robotiq 85 grippers, OSC controller | MIT |
+| [MuJoCo](https://github.com/google-deepmind/mujoco) 2.3.7 | Physics and rendering under robosuite | Apache-2.0 |
+| PyTorch, Hugging Face `transformers` | Models, training, DINOv3 loading | BSD-3-Clause, Apache-2.0 |
+| NumPy, h5py, scikit-learn, umap-learn, imageio, OpenCV, Pillow, matplotlib | Data, analysis, video and figures | BSD, Apache-2.0, MIT-style |
+
+The simulation is built on robosuite directly; LIBERO is not needed. Install with `pip install -r requirements.txt -r requirements-sim.txt`.
+The human clips and Panda demonstrations are my own and are released as a [Hugging Face dataset](https://huggingface.co/datasets/VinayMohan/latent-action-world-model-data) under MIT.
+
 ## Layout
 
 `src/` is code you import, `scripts/` is code you run.
@@ -221,7 +234,7 @@ artifacts/      (gitignored) checkpoints/  reach/
 ## Run
 
 Reproduce in the order listed. From the repo root, in one virtual environment. `requirements.txt` covers training and analysis; `requirements-sim.txt` adds robosuite,
-needed by `src.sim` and scripts 05 and 09. DINOv3 weights are gated on Hugging Face, so run `hf auth login` once before extracting features.
+needed by `src.sim` and scripts 05 and 09. DINOv3 weights are gated on Hugging Face: request access and run `hf auth login` once (see Third-Party Code, Models And Licences).
 
 ```
 pip install -r requirements.txt            # simulation extras: requirements-sim.txt
