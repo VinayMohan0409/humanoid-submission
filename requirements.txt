@@ -1,0 +1,10 @@
+numpy<2
+torch
+transformers
+huggingface_hub
+h5py
+imageio[ffmpeg]
+opencv-python
+matplotlib
+tensorboard
+pytest
