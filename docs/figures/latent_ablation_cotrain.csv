@@ -1,0 +1,13 @@
+domain,split,condition,mean_ratio,step_1,step_2,step_3,step_4,step_5
+human,train,own,0.271,0.379,0.288,0.248,0.225,0.214
+human,train,shuffled,1.533,2.433,1.654,1.343,1.172,1.062
+human,train,constant,1.034,1.598,1.114,0.917,0.805,0.735
+human,val,own,0.482,0.594,0.499,0.461,0.436,0.42
+human,val,shuffled,1.552,2.416,1.66,1.37,1.206,1.106
+human,val,constant,1.085,1.614,1.152,0.976,0.874,0.808
+panda,train,own,0.175,0.265,0.183,0.153,0.139,0.135
+panda,train,shuffled,1.577,2.492,1.672,1.372,1.216,1.134
+panda,train,constant,1.194,1.876,1.262,1.039,0.924,0.867
+panda,val,own,0.303,0.397,0.306,0.279,0.268,0.265
+panda,val,shuffled,2.1,3.421,2.215,1.798,1.584,1.481
+panda,val,constant,1.788,2.879,1.874,1.533,1.371,1.282

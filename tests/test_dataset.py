@@ -1,11 +1,12 @@
+"""Check the human-video train/val split and the stride between windowed frames."""
 import csv
 
 import numpy as np
 import pytest
 import torch
 
-from config import FEATURE_DIR, STRIDE, VIDEO_DIR
-from data.dataset import PairDataset, pool, read_split
+from src.config import CHUNK, FEATURE_DIR, STRIDE, VIDEO_DIR
+from src.datasets.human import ChunkDataset, pool, read_split
 
 
 def test_split_is_disjoint_and_complete():
@@ -18,10 +19,11 @@ def test_split_is_disjoint_and_complete():
     assert train | val == names
 
 
-def test_pair_is_stride_apart():
+def test_window_is_stride_apart():
     if not list(FEATURE_DIR.glob("*.npy")):
-        pytest.skip("run python -m features.dino first")
-    dataset = PairDataset("train")
-    clip = dataset.clips[0]
-    expected = pool(torch.from_numpy(np.stack([clip[0], clip[STRIDE]])).float())
-    assert torch.equal(dataset[0], expected)
+        pytest.skip("run python -m scripts.01_extract_features human_videos first")
+    dataset = ChunkDataset("train", "cpu")
+    clip = np.load(FEATURE_DIR / f"{read_split('train')[0]}.npy")
+    expected = pool(torch.from_numpy(np.stack([clip[k * STRIDE] for k in range(CHUNK + 1)])).float())
+    first = next(dataset.batches(1, shuffle=False))[0]
+    assert torch.equal(first, expected)

@@ -4,7 +4,10 @@ transformers
 huggingface_hub
 h5py
 imageio[ffmpeg]
+pillow
 opencv-python
 matplotlib
 tensorboard
 pytest
+scikit-learn
+umap-learn

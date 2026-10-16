@@ -1,14 +1,15 @@
-import pytest
+"""Shape, KL and checkpoint round-trip tests for the latent action model."""
 import torch
 
-from config import FEATURE_DIM, LATENT_DIM, N_QUERIES, N_TOKENS
-from models.latent_action import LatentActionEncoder, kl_divergence
-from models.world_model import WorldModel
-from train import load_checkpoint, save_checkpoint
+from src.config import CHUNK, FEATURE_DIM, LATENT_DIM, N_QUERIES, N_TOKENS
+from src.models.latent_action import LatentActionEncoder, encode_chunk, kl_divergence
+from src.models.world_model import WorldModel
+from src.training.checkpoints import load_checkpoint, save_checkpoint
 
 
 def test_checkpoint_round_trip(tmp_path):
     def build():
+        """Return a fresh encoder and world model with their optimizer."""
         model = torch.nn.ModuleDict({"encoder": LatentActionEncoder(), "world_model": WorldModel()})
         return model, torch.optim.AdamW(model.parameters())
 
@@ -23,16 +24,22 @@ def test_checkpoint_round_trip(tmp_path):
     assert len(fresh_optimizer.state_dict()["state"]) == len(optimizer.state_dict()["state"]) > 0
 
 
-def test_latent_action_shape_and_kl():
-    frame = torch.randn(2, N_TOKENS, FEATURE_DIM)
-    mean, logvar = LatentActionEncoder()(frame, frame)
-    assert mean.shape == logvar.shape == (2, N_QUERIES, LATENT_DIM)
+def test_chunk_encoder_shape_and_kl():
+    frames = torch.randn(2, CHUNK + 1, N_TOKENS, FEATURE_DIM)
+    mean, logvar = encode_chunk(LatentActionEncoder(), frames)
+    assert mean.shape == logvar.shape == (2, CHUNK, N_QUERIES, LATENT_DIM)
     assert torch.isfinite(kl_divergence(mean, logvar))
 
 
-@pytest.mark.parametrize("mode", ["cross", "concat"])
-def test_world_model_output_shape(mode, monkeypatch):
-    monkeypatch.setattr("models.world_model.CONDITIONING", mode)
-    frame = torch.randn(2, N_TOKENS, FEATURE_DIM)
-    z = torch.randn(2, N_QUERIES, LATENT_DIM)
-    assert WorldModel()(frame, z).shape == frame.shape
+def test_world_model_shape_and_causality():
+    model = WorldModel().eval()
+    for p in model.out.parameters():
+        torch.nn.init.normal_(p, std=0.1)
+    frame, z = torch.randn(2, N_TOKENS, FEATURE_DIM), torch.randn(2, CHUNK, N_QUERIES, LATENT_DIM)
+    out = model(frame, z)
+    assert out.shape == (2, CHUNK, N_TOKENS, FEATURE_DIM)
+    for j in range(CHUNK):
+        changed = z.clone()
+        changed[:, j] += 1
+        diff = (model(frame, changed) - out).abs().amax(dim=(0, 2, 3))
+        assert (diff[:j] == 0).all() and (diff[j:] > 0).all()
