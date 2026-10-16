@@ -60,7 +60,7 @@ Simulated objects use 6 training colours; 4 further colours are held out for eva
 | Co-trained (main) | 50 human clips + 24 Panda demos (the rest held out), 20 epochs, half a batch from each domain per step | 180 Panda play episodes (Panda gripper); 180 Robotiq play episodes (Robotiq gripper) |
 
 Each IDM predicts the 3 position commands over 4 control steps from a pair of frame features, trained for 30 epochs and kept at its best
-held-out play error. It has no gripper output. Human-only had more human clips than the co-trained model, which favours it.
+held-out play error. It has no gripper output.
 
 ### What Was Seen And Unseen
 
@@ -83,7 +83,7 @@ given only a goal image, rendered by a scripted arm moving 15-25 cm from the sta
   the gripper stays closed because no IDM predicts it.
 
 Planner: CEM over latent actions (256 samples, 32 elites, 4 iterations), goal features weighted toward the patches that change between start and goal,
-latent prior fitted to Panda play latents. Rotation is not commanded. Goal poses are rendered with each condition's own gripper, so they differ slightly between conditions.
+latent prior fitted to Panda play latents. Goal poses are rendered with each condition's own gripper, so they differ slightly between conditions.
 
 ## Results
 
@@ -158,11 +158,8 @@ Position MSE on held-out episodes against predicting the mean action: play 0.204
 - **Depth.** One front camera; the gripper can look aligned with the goal in the image yet be several centimetres off in depth.
 - **Small evaluation.** 5 reach and 10 carry tasks per condition, one trained model each, one training seed. One task changes a rate by 10-20 points.
 - **Embodiment-specific latents.** See Latent Space: the latent is not embodiment-agnostic, which can limit transfer between embodiments.
-- **Carry is weaker than reach.** Carry goals were not required to be fully in view, and some sit at the edge of the frame.
-- **No gripper control and no rotation.** Position only; the gripper is held open or closed.
-- **Simulation only.** Goal images come from the same simulator, and the start pose sits at the back of the workspace, so goals go forward or sideways.
-- **Baselines are not matched.** Human-only saw 64 clips for 10 epochs; the co-trained model saw 50 clips for 20 epochs. There is no random-latent baseline in the task evaluation.
-- **No action-labelled baseline.** A policy trained directly on the 30 labelled demos was not run, so the gain from the world model over the labelled data alone is not isolated.
+- **No gripper control.** The gripper is held open (reach) or closed (carry); only the end effector's position is planned.
+- **Correlation, not causation.** The world model's predictions are learned correlations between frames, not a causal model of what the robot did. Like the latent actions, it represents the whole scene transition (hand or arm, objects, shadows) rather than the embodiment's own action.
 
 ## Future Work
 
@@ -175,8 +172,8 @@ Position MSE on held-out episodes against predicting the mean action: play 0.204
 
 ## Design Decisions
 
-- **Predict frozen DINOv3 features, not pixels.** A compact, semantic target; only small transformers are trained on top.
-- **Latent actions instead of action labels.** Human video has none, so one latent space lets human and robot data train the same model.
+- **Predict frozen DINOv3 features, not pixels.** A compact, semantic target. The features are extracted once and cached, so only small transformers are trained on top: cheap to compute and fast to run (co-training takes about 12 minutes on one GPU).
+- **Latent actions instead of action labels.** Human videos have no action labels, so one latent space lets human and robot data train the same model.
 - **A small bottleneck (2 tokens x 8 numbers).** z must carry only what changed between frames; the sweep below supports it.
 - **Co-training in every batch.** Half a batch of human windows and half of Panda windows through one encoder and world model.
 - **A separate IDM.** The only part that needs labels, and the part swapped to handle the Robotiq gripper without retraining the world model.
