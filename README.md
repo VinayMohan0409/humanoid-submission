@@ -111,7 +111,7 @@ Carry (10 tasks; the carried object cycles cube, cuboid, cylinder) - [full-quali
 ![Carry examples](docs/videos/carry_examples.gif)
 
 The current main limit is depth. In several misses the gripper overlaps its green goal silhouette in the image while the 3D distance is still 9-15 cm,
-so the model gets near the goal in the image but struggles to place the gripper at the right depth from one front camera. We have not measured the error per axis, so
+so the model gets near the goal in the image but struggles to place the gripper at the right depth from one front camera. I have not measured the error per axis, so
 this is a hypothesis.
 
 ### The Latent Action Matters
@@ -137,7 +137,7 @@ regions in t-SNE and UMAP and overlap only partly in PCA. UMAP distances are den
 
 This is consistent with the latents encoding embodiment, although the human and Panda motion distributions also differ, so a paired test would be needed to separate the two.
 Halving the bottleneck to 2 tokens x 4 numbers (`ablations/latent_2x4/`) costs a little accuracy (held-out relative error 0.53 human / 0.33 Panda against 0.48 / 0.30)
-and clusters the same way, so capacity alone does not remove it. We kept 2 x 8.
+and clusters the same way, so capacity alone does not remove it. I kept 2 x 8.
 
 ### Predictions
 
@@ -166,7 +166,6 @@ Position MSE on held-out episodes against predicting the mean action: play 0.204
 - **Embodiment-invariant latents.** Add an adversarial embodiment classifier on z (gradient reversal), or a contrastive / distribution-matching loss between human and robot latents.
 - **Paired data.** Human and robot clips of the same motion, with a loss pulling their latents together, to tell embodiment leakage from real motion differences.
 - **Different bottleneck.** The bottleneck is already tight (16 numbers per step, and 8 clustered the same), so try a shared discrete codebook (VQ) or one token instead of simply shrinking it.
-- **Remove the embodiment from the image.** Mask or inpaint the hand or arm before encoding, or use object-centric tokens.
 - **Depth.** A second camera or depth input for the planner and the goal.
 - **Gripper control, more embodiments and a larger evaluation** with several seeds, then a real robot.
 
@@ -193,7 +192,7 @@ Apart from the bottleneck, these choices were not ablated.
 
 - **Gripper control.** The IDM with a gripper output predicts the open/closed command well offline (0.80 on held-out Panda demos, majority guess 0.62),
   but closed-loop reaching with the Robotiq gripper drifted away from the goal. Left as future work.
-- **Decoding actions straight from z.** A latent-to-action decoder gave negative position R^2 on held-out demos, which is why an IDM on features is used.
+- **Decoding actions straight from z.** A latent-to-action decoder was evaluated however proved insufficent for the use case, which is why an IDM on features is used.
 
 ## Third-Party Code, Models And Licences
 
